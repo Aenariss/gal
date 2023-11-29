@@ -2,8 +2,8 @@ CC = g++
 CFLAGS = -Wall
 TARGET = gal
 
-FILE_NAMES_PATHS = src/gal structures/DataReader structures/Node structures/Vehicle structures/Request libs/pugixml 
-FILE_NAMES = gal DataReader pugixml Node Vehicle Request
+FILE_NAMES_PATHS = src/gal src/genetic structures/DataReader structures/Node structures/Vehicle structures/Request libs/pugixml 
+FILE_NAMES = gal genetic DataReader pugixml Node Vehicle Request
 sources = $(FILE_NAMES_PATHS:=.cpp)
 objects = $(FILE_NAMES:=.o)
 

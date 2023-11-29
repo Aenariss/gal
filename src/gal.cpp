@@ -1,10 +1,10 @@
 #include <iostream>
-#include "../structures/DataReader.hpp"
+
+#include "genetic.hpp"
 
 using namespace std;
 
 int main(void) {
-    VRPDataReader reader = VRPDataReader("./data/B-n31-k05.xml");
-
+    genetic();
     return 0;
 }

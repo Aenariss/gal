@@ -12,6 +12,11 @@ VRPDataReader::VRPDataReader(string filename) {
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_file(filename.c_str());
 
+    if (!result) {
+        cerr << "Something went wrong when loading the file!";
+        exit(1);
+    }
+
     vector<Node> nodes;
     vector<Vehicle> vehicles;
     vector<Request> requests;

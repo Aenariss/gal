@@ -10,10 +10,10 @@ class Node {
     public:
         Node(int id, int type, double x, double y);
         Node();
-        int id;
-        int type;
-        double x;
-        double y;
+        int id; // Node id
+        int type; // Node type (hub/client)
+        double x; // X coord
+        double y; // Y coord
 };
 
 #endif

@@ -240,6 +240,36 @@
             <arrival_node>1</arrival_node>
             <capacity>100.0</capacity>
         </vehicle_profile>
+        <vehicle_profile type="0">
+            <departure_node>1</departure_node>
+            <arrival_node>1</arrival_node>
+            <capacity>100.0</capacity>
+        </vehicle_profile>
+        <vehicle_profile type="0">
+            <departure_node>1</departure_node>
+            <arrival_node>1</arrival_node>
+            <capacity>100.0</capacity>
+        </vehicle_profile>
+        <vehicle_profile type="0">
+            <departure_node>1</departure_node>
+            <arrival_node>1</arrival_node>
+            <capacity>100.0</capacity>
+        </vehicle_profile>
+        <vehicle_profile type="0">
+            <departure_node>1</departure_node>
+            <arrival_node>1</arrival_node>
+            <capacity>100.0</capacity>
+        </vehicle_profile>
+        <vehicle_profile type="0">
+            <departure_node>1</departure_node>
+            <arrival_node>1</arrival_node>
+            <capacity>100.0</capacity>
+        </vehicle_profile>
+        <vehicle_profile type="0">
+            <departure_node>1</departure_node>
+            <arrival_node>1</arrival_node>
+            <capacity>100.0</capacity>
+        </vehicle_profile>
     </fleet>
     <requests>
         <request id="1" node="2">
