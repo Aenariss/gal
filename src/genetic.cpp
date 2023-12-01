@@ -197,10 +197,12 @@ vector<vector<int>> getRoutes(vector<int> solution, VRPDataReader reader, vector
 */
 vector<int> mutation(vector<int> solution, VRPDataReader reader, vector<vector<double>> distanceMatrix) {
 
+    /*
     // Only mutate with a probability of 30%
     if (rand() % 100 >= 30) {
         return solution;
     }
+    */
 
     vector<vector<int>> routes = getRoutes(solution, reader, distanceMatrix);
 
@@ -303,9 +305,11 @@ pair<vector<int>, vector<int>> orderedCrossover(vector<int> parent1, vector<int>
 /**
  * Function to calculate the fitness value of each member of the population and return the worst score & corresponding member
 */
-pair<double, vector<int>> populationFitness(vector<vector<int>> population, VRPDataReader reader, vector<vector<double>> distanceMatrix) {
+pair<pair<double,double>, pair<vector<int>, vector<int>>> populationFitness(vector<vector<int>> population, VRPDataReader reader, vector<vector<double>> distanceMatrix) {
     double highest_score = 0;
+    double lowest_score = __DBL_MAX__;
     vector<int> worst_member;
+    vector<int> best_member;
     for (auto member : population) {
         auto score = fitness(member, reader, distanceMatrix);
         // If his result is worse (higher), mark him as the new worst
@@ -313,8 +317,12 @@ pair<double, vector<int>> populationFitness(vector<vector<int>> population, VRPD
             highest_score = score;
             worst_member = member;
         }
+        else if (score < lowest_score) {
+            lowest_score = score;
+            best_member = member;
+        }
     }
-    return make_pair(highest_score, worst_member);
+    return make_pair(make_pair(highest_score, lowest_score), make_pair(worst_member, best_member));
 }
 
 /**
@@ -334,11 +342,11 @@ void genetic() {
     // This all will be in a cycle going through all the data files which outputs the results into another folder
     VRPDataReader reader = VRPDataReader("./data/B-n31-k05.xml");
 
-    size_t iteration_limit = 1000;
+    size_t iteration_limit = 5000;
     auto customers = reader.nodes;
     auto distanceMatrix = calculateDistanceMatrix(customers);
 
-    auto population = initPopulation(customers, 200); // 200 is the recommended amount
+    auto population = initPopulation(customers, 50); // 200 is the recommended amount
 
     // Running the algorithm
     for (size_t i = 0; i < iteration_limit; i++) {
@@ -356,22 +364,32 @@ void genetic() {
         offspring2 = mutation(offspring2, reader, distanceMatrix);
 
         // Find the worst score in population and the correspnding weak member
-        pair<double, vector<int>> worst_member = populationFitness(population, reader, distanceMatrix);
-        auto worst_score = worst_member.first;
-        auto worst_solution = worst_member.second;
+        pair<pair<double, double>, pair<vector<int>, vector<int>>> worst_member = populationFitness(population, reader, distanceMatrix);
+        auto worst_score = worst_member.first.first;
+        auto worst_solution = worst_member.second.first;
 
         // Evaluate the offsprings against the lowest score in population
         auto offspring1_score = fitness(offspring1, reader, distanceMatrix);
         auto offspring2_score = fitness(offspring2, reader, distanceMatrix);
 
-        // Choose the better offspring to use as a replacement (Another approach would be to use both - the better to replace the worst, then recalculate and the other replace the next worst)
-        vector<int> better_offspring;
-        offspring1_score > offspring2_score ? better_offspring = offspring2 : better_offspring = offspring1;
+        double better_score = offspring1_score > offspring2_score ?  offspring2_score : offspring1_score;
 
-        // Replace the member with offspring
-        if (better_offspring < worst_score) {
+        // Choose the better offspring to use as a replacement (Another approach would be to use both - the better to replace the worst, then recalculate and the other replace the next worst)
+        vector<int> better_offspring = offspring1_score > offspring2_score ? offspring2 : offspring1;
+
+        // Replace the worst member with offspring
+        if (better_score < worst_score) {
             population = removeMember(population, worst_solution);
             population.push_back(offspring1);
         }
     }
+
+    // Find the best score
+    pair<pair<double, double>, pair<vector<int>, vector<int>>> best_member = populationFitness(population, reader, distanceMatrix);
+    auto best_solution = best_member.second.second;
+    cout << best_member.first.second << endl;
+
+    // Find the best routes
+    vector<vector<int>> routes = getRoutes(best_solution, reader, distanceMatrix);
+    print2D(routes);
 }
