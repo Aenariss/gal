@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<instance>
+    <info>
+        <dataset>Augerat 1995 — Set B</dataset>
+        <name>n10</name>
+    </info>
+    <network>
+        <nodes>
+            <node id="1" type="0">
+                <cx>150.0</cx>
+                <cy>250.0</cy>
+            </node>
+            <node id="2" type="1">
+                <cx>151.0</cx>
+                <cy>264.0</cy>
+            </node>
+            <node id="3" type="1">
+                <cx>159.0</cx>
+                <cy>261.0</cy>
+            </node>
+            <node id="4" type="1">
+                <cx>130.0</cx>
+                <cy>254.0</cy>
+            </node>
+            <node id="5" type="1">
+                <cx>128.0</cx>
+                <cy>252.0</cy>
+            </node>
+            <node id="6" type="1">
+                <cx>163.0</cx>
+                <cy>247.0</cy>
+            </node>
+            <node id="7" type="1">
+                <cx>146.0</cx>
+                <cy>246.0</cy>
+            </node>
+            <node id="8" type="1">
+                <cx>161.0</cx>
+                <cy>242.0</cy>
+            </node>
+            <node id="9" type="1">
+                <cx>42.0</cx>
+                <cy>39.0</cy>
+            </node>
+            <node id="10" type="1">
+                <cx>163.0</cx>
+                <cy>236.0</cy>
+            </node>
+            <node id="11" type="1">
+                <cx>148.0</cx>
+                <cy>232.0</cy>
+            </node>
+        </nodes>
+        <euclidean/>
+        <decimals>0</decimals>
+    </network>
+    <fleet>
+        <vehicle_profile type="0">
+            <departure_node>1</departure_node>
+            <arrival_node>1</arrival_node>
+            <capacity>100.0</capacity>
+        </vehicle_profile>
+        <vehicle_profile type="0">
+            <departure_node>1</departure_node>
+            <arrival_node>1</arrival_node>
+            <capacity>100.0</capacity>
+        </vehicle_profile>
+        <vehicle_profile type="0">
+            <departure_node>1</departure_node>
+            <arrival_node>1</arrival_node>
+            <capacity>100.0</capacity>
+        </vehicle_profile>
+        <vehicle_profile type="0">
+            <departure_node>1</departure_node>
+            <arrival_node>1</arrival_node>
+            <capacity>100.0</capacity>
+        </vehicle_profile>
+        <vehicle_profile type="0">
+            <departure_node>1</departure_node>
+            <arrival_node>1</arrival_node>
+            <capacity>100.0</capacity>
+        </vehicle_profile>
+    </fleet>
+    <requests>
+        <request id="1" node="2">
+            <quantity>25.0</quantity>
+        </request>
+        <request id="2" node="3">
+            <quantity>3.0</quantity>
+        </request>
+        <request id="3" node="4">
+            <quantity>13.0</quantity>
+        </request>
+        <request id="4" node="5">
+            <quantity>17.0</quantity>
+        </request>
+        <request id="5" node="6">
+            <quantity>16.0</quantity>
+        </request>
+        <request id="6" node="7">
+            <quantity>9.0</quantity>
+        </request>
+        <request id="7" node="8">
+            <quantity>22.0</quantity>
+        </request>
+        <request id="8" node="9">
+            <quantity>10.0</quantity>
+        </request>
+        <request id="9" node="10">
+            <quantity>16.0</quantity>
+        </request>
+        <request id="10" node="11">
+            <quantity>8.0</quantity>
+        </request>
+    </requests>
+</instance>

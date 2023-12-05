@@ -1,4 +1,6 @@
 /.vscode
+.idea
 gal
 *.py
 *.json
+*.o
