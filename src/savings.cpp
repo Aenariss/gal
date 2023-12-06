@@ -4,23 +4,37 @@
  * Author: Peter Močáry <xmocar00>
 **/
 
+
 #include <algorithm>
+#include <chrono>
 #include <iomanip>
 #include "savings.hpp"
 #include "util.hpp"
 
-
 void savingsAlgorithm(const vector<Node>& nodes, const vector<Request>& requests, double vehicleCapacity) {
+    // TIMESTAMP: Record time before the algorithm starts
+    auto algorithmStart = chrono::high_resolution_clock::now();
+
     vector<Route> routes;
+    int maxRoutesCnt = ceil((int) nodes.size()/2);
     multiset<Savings, SavingsRanker> savings;
     vector<bool> customersServed(nodes.size() - 1, false); // served status (excluding the depot)
 
+    // Complexity - m (number of edges) and n (number of nodes)
+    // O(m + m*log(n) + (m*n + m*(n+m) + n)*n)
+    // O(n^2 + n^2*log(n) + (n^3 + n^2*(n+n^2) + n)*n)
+    // O(n^2 + n^2*log(n) + (n^3 + n^3 + n^4 + n)*n)
+    // O(n^2 + n^2*log(n) + n^4 + n^4 + n^5 + n^2)
+    // O(n^5) - polynomial
+
     // Step one:
     // Calculate the distance between every two customers and between each customer to the depot
+    // O(m)
     vector<vector<double>> distanceMatrix = calculateDistanceMatrix(nodes);
 
     // Step two:
     // Calculate all savings between every two customers. Rank the savings and omit those below zero.
+    // O(m)
     for (int i = 0; i < (int)nodes.size()-1; i++) {
         for (int j = i + 1; j < (int)nodes.size()-1; j++) {
             // Note: customer IDs always start at 1
@@ -28,18 +42,23 @@ void savingsAlgorithm(const vector<Node>& nodes, const vector<Request>& requests
             if (newSavings.value < .0) {
                 continue;
             }
+            // O(log n)
             savings.insert(newSavings);
         }
     }
-
+    int routesCnt = 0;
+    //O(n/2) = O(n)
     do {
         // Step three:
         // Choose two customers with maximum savings satisfied the truck load limit as the initial route.
         Route route(vehicleCapacity);
+        routesCnt++;
+        // O(m)
         for (auto& candidateSavings: savings) {
             if (customersServed[candidateSavings.customerOneId-1] or customersServed[candidateSavings.customerTwoId-1]){
                 continue;
             }
+            // O(n)
             bool addedToRoute = route.appendCustomersIfCapacity(candidateSavings.customerOneId, candidateSavings.customerTwoId,
                                                                 requests, distanceMatrix);
             if (addedToRoute) {
@@ -49,8 +68,8 @@ void savingsAlgorithm(const vector<Node>& nodes, const vector<Request>& requests
             }
         }
 
-
         vector<Savings> toDelete;
+        // O(m)
         for (auto& candidateNextSavings: savings) {
             if (customersServed[candidateNextSavings.customerOneId-1] and customersServed[candidateNextSavings.customerTwoId-1]) {
                 continue;
@@ -71,12 +90,17 @@ void savingsAlgorithm(const vector<Node>& nodes, const vector<Request>& requests
                 candidateCustomerId = candidateNextSavings.customerOneId;
             }
 
-            if (candidateCustomerId != -1) { // A candidate that can be added to the start or end of route was found
+            if (candidateCustomerId != -1 and !customersServed[candidateCustomerId-1]) { // A candidate that can be added to the start or end of route was found
                 // 4.2)
+                // O(m)
+                // NOTE: if the step of finding max savings is omitted entirely the algorithm seems to be giving better
+                // results. A single implementation of this algorithm was found on github and it also omits this step.
+                // However, the step was preserved to compare stick with definition of algorithm from the paper.
                 Savings maxSavings = getMaxSavings(savings, candidateCustomerId, customersServed);
                 if (candidateNextSavings == maxSavings) {
+                    //O(n)
                     bool added = route.addCustomerIfCapacity(candidateCustomerId,
-                                                             requests[candidateCustomerId - 2].quantity, start,
+                                                             requests[candidateCustomerId-2].quantity, start,
                                                              distanceMatrix);
                     if (added) {
                         customersServed[candidateCustomerId-1] = true;
@@ -86,25 +110,63 @@ void savingsAlgorithm(const vector<Node>& nodes, const vector<Request>& requests
             // Step five:
             // Repeat step four till no customer can be added to the route subjected to the limit of the truck load
         }
+
+        // NOTE: this is artificial fix for cases when savings don't contain pairs of remaining customers
+        // The algorithm was not specified well enough to decide what happens in this case therefore we
+        // assume that customers are served one by one.
+        if (route.getSize() == 0) {
+            createRouteForNotServedCustomers(customersServed, routes, vehicleCapacity,
+                                             requests, distanceMatrix);
+            break;
+        }
         route.addDistancesToDepot(distanceMatrix);
+        //O(n)
         routes.push_back(route);
 
     // Step six:
     // Repeat steps three, four and step five till all customers have been added to the routes.
-    } while (!all_of(customersServed.begin(), customersServed.end(), [](bool v) { return v; })); //TODO: condition
+    // O(n) - check if all customers were served
+    } while (!all_of(customersServed.begin(), customersServed.end(), [](bool v) { return v; }) and routesCnt != maxRoutesCnt);
+
+    // TIMESTAMP: record the time after the algorithm ends and calculate its duration
+    auto algorithmEnd = chrono::high_resolution_clock::now();
+    auto algorithmDuration = chrono::duration_cast<chrono::microseconds>(algorithmEnd - algorithmStart);
 
     double totalDistance = 0;
-    int routeNum = 1;
+    int routeNum = 0;
+    int routesWithTwoNodes = 0;
+    double unusedCapacity = .0;
     for (auto& route : routes) {
+        routeNum++;
+        totalDistance += route.distance;
+        if (route.getSize() == 2) {
+            routesWithTwoNodes++;
+        }
+        unusedCapacity = route.vehicleCapacity - route.currentQuantity;
         cout << "#" << routeNum;
         route.printOut();
-        totalDistance += route.distance;
-        totalDistance += 1; // Penalty for care used
-        routeNum++;
     }
-    cout << totalDistance << endl;
+    cout << "Overall distances " << totalDistance << endl;
+    cout << "Vehicles " << routeNum << endl;
+    cout << "Average number of customers " << nodes.size() / routeNum << endl;
+    cout << "Number of routes linking only two customers " << routesWithTwoNodes << endl;
+    cout << "Unused capacity " << unusedCapacity << endl;
+    cout << "Time of the algorithm " << algorithmDuration.count() << " microseconds" << endl;
 }
 
+void createRouteForNotServedCustomers(const vector<bool>& isServed, vector<Route>& routes, double vehicleCapacity,
+                                      const vector<Request>& requests, const vector<vector<double>>& distanceMatrix) {
+    vector<int> idsNotInRouteYet;
+    for (int i = 0; i < (int)isServed.size(); i++) {
+        if (!isServed[i]) idsNotInRouteYet.push_back(i+1);
+    }
+    // create routes for every customer that was not yet served
+    for (auto& id : idsNotInRouteYet) {
+        Route newRoute(vehicleCapacity);
+        newRoute.addCustomerIfCapacity(id, requests[id-2].quantity, false, distanceMatrix);
+        routes.push_back(newRoute);
+    }
+}
 
 Savings getMaxSavings(multiset<Savings, SavingsRanker>& savings, int customerId, const vector<bool>& isServed) {
     Savings maxSavings;
@@ -197,11 +259,14 @@ int Route::getEnd() const {
 }
 
 void Route::printOut() const {
-    cout << " " << this->distance << " (" << this->currentQuantity << "/" << this->vehicleCapacity << ") ";
     for (auto& id : route) {
         cout << " " << id;
     }
     cout << endl;
+}
+
+int Route::getSize() const {
+    return this->route.size();
 }
 
 void Route::addDistancesToDepot(const vector<vector<double>> &distanceMatrix) {
