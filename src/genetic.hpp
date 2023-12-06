@@ -6,6 +6,7 @@
 #include <cmath>
 #include <algorithm>
 #include <random>
+#include <chrono>
 
 void genetic(const vector<Node>& nodes, const vector<Request>& requests, const double &vehicleCapacity);
 

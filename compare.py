@@ -32,7 +32,7 @@ for file in files:
         try:
             result = subprocess.run(algo + [file], capture_output=True, text=True, timeout=5)
         except:
-            result_values = (overall, vehicles, avg, only_2, unused)
+            result_values = (overall, vehicles, avg, only_2, unused, time)
             results_one_run.append(result_values)
             routes_one_run.append(route)
             crashed.append(file)
@@ -53,8 +53,10 @@ for file in files:
                     only_2 = float(search("(\d+)", line).group())
                 elif line[0] == "U": # Unused
                     unused = float(search("([0-9]*[.])?[0-9]+", line).group())
+                elif line[0] == "T": # Time
+                    time = float(search("([0-9]*[.])?[0-9]+", line).group())
 
-        result_values = (overall, vehicles, avg, only_2, unused)
+        result_values = (overall, vehicles, avg, only_2, unused, time)
         results_one_run.append(result_values)
         routes_one_run.append(route)
 

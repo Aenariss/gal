@@ -315,6 +315,10 @@ void genetic(const vector<Node>& nodes, const vector<Request>& requests, const d
     auto customers = nodes;
     auto distanceMatrix = calculateDistanceMatrix(customers);
 
+
+    // TIMESTAMP: Record time before the algorithm starts
+    auto algorithmStart = chrono::high_resolution_clock::now();
+
     auto population = initPopulation(customers, 50); // 50 seems ok
 
     // Running the algorithm
@@ -357,6 +361,10 @@ void genetic(const vector<Node>& nodes, const vector<Request>& requests, const d
     pair<pair<double, double>, pair<vector<int>, vector<int>>> best_member = populationFitness(population, requests, vehicleCapacity, distanceMatrix);
     auto best_solution = best_member.second.second;
 
+    // TIMESTAMP: record the time after the algorithm ends and calculate its duration
+    auto algorithmEnd = chrono::high_resolution_clock::now();
+    auto algorithmDuration = chrono::duration_cast<chrono::microseconds>(algorithmEnd - algorithmStart);
+
     // Find the best routes
     vector<vector<int>> routes = getRoutes(best_solution, requests, vehicleCapacity);
 
@@ -392,4 +400,7 @@ void genetic(const vector<Node>& nodes, const vector<Request>& requests, const d
 
     // unused capacity in all routes
     cout << "Unused capacity: " << unused_capacity << endl;
+
+    // time
+    cout << "Time of the algorithm " << algorithmDuration.count() << " microseconds" << endl;
 }
