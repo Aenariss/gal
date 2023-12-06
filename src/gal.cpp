@@ -34,20 +34,18 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-
+    // Load data
     VRPDataReader reader = VRPDataReader(data);
 
+    vector<Node> nodes = reader.nodes;          // the 0th node is the depot
+    vector<Request> requests = reader.requests; // each customer has single request
+    vector<Vehicle> vehicles = reader.vehicles; // the number of vehicles is not taken into
+                                                // account only the capacity which is taken from the first vehicle
+    double vehicleCapacity = vehicles[0].capacity;
     if (algo == "savings") {
-        // Load data
-        vector<Node> nodes = reader.nodes;          // the 0th node is the depot
-        vector<Request> requests = reader.requests; // each customer has single request
-        vector<Vehicle> vehicles = reader.vehicles; // the number of vehicles is not taken into
-                                                    // account only the capacity which is taken from the first vehicle
-        double vehicleCapacity = vehicles[0].capacity;
-
         savingsAlgorithm(nodes, requests, vehicleCapacity);
     } else if (algo == "genetic") {
-        genetic(reader);
+        genetic(nodes, requests, vehicleCapacity);
     }
     return 0;
 }

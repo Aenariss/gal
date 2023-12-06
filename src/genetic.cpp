@@ -12,7 +12,7 @@ using namespace std;
 /**
  * Function to initialize the population randomly
 */
-vector<vector<int>> initPopulation(vector<Node> customers, size_t populationSize) {
+vector<vector<int>> initPopulation(const vector<Node> &customers, const size_t &populationSize) {
 
     vector<vector<int>> population;
     vector<int> customer_ids;
@@ -44,7 +44,7 @@ vector<vector<int>> initPopulation(vector<Node> customers, size_t populationSize
  * Function to calculate the distance in the given route using the preCalculated distanceMatrix
  * Implicitly adds the distance from the depot to the first customer and the distance from the last customer back to the depot
 */
-double calculateCustomerDistance(vector<int> current_route, vector<vector<double>> distanceMatrix) {
+double calculateCustomerDistance(const vector<int> &current_route, const vector<vector<double>> &distanceMatrix) {
     double total_dist = 0;
 
     // Add distance from depot to the first customer
@@ -68,9 +68,8 @@ double calculateCustomerDistance(vector<int> current_route, vector<vector<double
  * Function to calculate the fitness of the solution
  * Adds euclidean distances between each point and adds a penalty in the form of the amount of vehicles needed to fulfill the route (capacity constraint)
 */
-double fitness(vector<int> solution, VRPDataReader reader, vector<vector<double>> distanceMatrix) {
-    auto requests = reader.requests; // the requests are sorted by the ID of the customer
-    double vehicle_capacity = reader.vehicles[0].capacity; // all vehicle share the same capacity
+double fitness(const vector<int> &solution, const vector<Request> &requests, const double &vehicleCapacity, const vector<vector<double>> &distanceMatrix) {
+    double vehicle_capacity = vehicleCapacity; // all vehicle share the same capacity
     double total_vehicle_capacity = vehicle_capacity;
     int vehicles_penalty = 0;
     double travelled_distance = 0;
@@ -111,9 +110,8 @@ double fitness(vector<int> solution, VRPDataReader reader, vector<vector<double>
 /**
  * Function to get the routes from a solution
 */
-vector<vector<int>> getRoutes(vector<int> solution, VRPDataReader reader, vector<vector<double>> distanceMatrix) {
-    auto requests = reader.requests; // the requests are sorted by the ID of the customer
-    double vehicle_capacity = reader.vehicles[0].capacity; // all vehicle share the same capacity
+vector<vector<int>> getRoutes(const vector<int> &solution, const vector<Request> &requests, const double &vehicleCapacity) {
+    double vehicle_capacity = vehicleCapacity; // all vehicle share the same capacity
     double total_vehicle_capacity = vehicle_capacity;
     vector<vector<int>> routes;
 
@@ -151,7 +149,7 @@ vector<vector<int>> getRoutes(vector<int> solution, VRPDataReader reader, vector
 /**
  * Function to apply the mutation that randomly swaps 2 customers that are not on the same way
 */
-vector<int> mutation(vector<int> solution, VRPDataReader reader, vector<vector<double>> distanceMatrix) {
+vector<int> mutation(const vector<int> &solution, const vector<Request> &requests, const double &vehicleCapacity) {
 
     /*
     // Only mutate with a probability of 30%
@@ -160,7 +158,7 @@ vector<int> mutation(vector<int> solution, VRPDataReader reader, vector<vector<d
     }
     */
 
-    vector<vector<int>> routes = getRoutes(solution, reader, distanceMatrix);
+    vector<vector<int>> routes = getRoutes(solution, requests, vehicleCapacity);
 
     int route_index1; int route_index2;
     // choose the routes from which we will randomly swap, they must not be the same
@@ -196,14 +194,14 @@ vector<int> mutation(vector<int> solution, VRPDataReader reader, vector<vector<d
 /**
  * Function to select an eligible parent from 2 random selections, where the better one is chosen
 */
-vector<int> binaryTournament(vector<vector<int>> population, VRPDataReader reader, vector<vector<double>> distanceMatrix) {
+vector<int> binaryTournament(const vector<vector<int>> &population, const vector<Request> &requests, const double &vehicleCapacity, const vector<vector<double>> &distanceMatrix) {
     auto pop_size = population.size();
 
     auto potentialParent1 = population[rand() % pop_size];
     auto potentialParent2 = population[rand() % pop_size];
 
-    auto p1_score = fitness(potentialParent1, reader, distanceMatrix); // calculate how good the potential parent 1 is
-    auto p2_score = fitness(potentialParent2, reader, distanceMatrix);
+    auto p1_score = fitness(potentialParent1, requests, vehicleCapacity, distanceMatrix); // calculate how good the potential parent 1 is
+    auto p2_score = fitness(potentialParent2, requests, vehicleCapacity, distanceMatrix);
 
     return (p1_score > p2_score ? potentialParent1 : potentialParent2); // pick the better parent
 }
@@ -215,7 +213,7 @@ vector<int> binaryTournament(vector<vector<int>> population, VRPDataReader reade
  * [1,5,2,6,  7,8  9,10] offspring1
  * [1,2,5,6,  9,10  7,8] offspring2
 */
-pair<vector<int>, vector<int>> orderedCrossover(vector<int> parent1, vector<int> parent2) {
+pair<vector<int>, vector<int>> orderedCrossover(const vector<int> &parent1, const vector<int> &parent2) {
     vector<int> offspring1(parent1.size(), -1);
     vector<int> offspring2(parent1.size(), -1);
 
@@ -252,8 +250,6 @@ pair<vector<int>, vector<int>> orderedCrossover(vector<int> parent1, vector<int>
             offspring2[i] = tmp_parent1[p1_ctr++];
         }
     }
-    //print1D(parent1); print1D(parent2); print1D(offspring1); print1D(offspring2); cout << lower_boundary << " " << upper_boundary << endl;
-    //exit(1);
     
     return make_pair(offspring1, offspring2);
 }
@@ -261,13 +257,13 @@ pair<vector<int>, vector<int>> orderedCrossover(vector<int> parent1, vector<int>
 /**
  * Function to calculate the fitness value of each member of the population and return the worst score & corresponding member
 */
-pair<pair<double,double>, pair<vector<int>, vector<int>>> populationFitness(vector<vector<int>> population, VRPDataReader reader, vector<vector<double>> distanceMatrix) {
+pair<pair<double,double>, pair<vector<int>, vector<int>>> populationFitness(const vector<vector<int>> &population, const vector<Request> &requests, const double &vehicleCapacity, const vector<vector<double>> &distanceMatrix) {
     double highest_score = 0;
     double lowest_score = __DBL_MAX__;
     vector<int> worst_member;
     vector<int> best_member;
     for (auto member : population) {
-        auto score = fitness(member, reader, distanceMatrix);
+        auto score = fitness(member, requests, vehicleCapacity, distanceMatrix);
         // If his result is worse (higher), mark him as the new worst
         if (score > highest_score) {
             highest_score = score;
@@ -284,28 +280,48 @@ pair<pair<double,double>, pair<vector<int>, vector<int>>> populationFitness(vect
 /**
  * Function to remove given element from the vector
 */
-vector<vector<int>> removeMember(vector<vector<int>> population, vector<int> to_remove) {
+vector<vector<int>> removeMember(vector<vector<int>> population, const vector<int> &to_remove) {
     auto index_to_remove = find(population.begin(), population.end(), to_remove);
     population.erase(index_to_remove);
     return population;
 }
 
 /**
+ * Function to calculate unused capacity for a car on a given route - it supposes the route is already optimalized for only 1 car
+*/
+double findUnusedCapacity(const vector<int> &route, const vector<Request> &requests, const double &vehicleCapacity) {
+    auto vehicle_capacity = vehicleCapacity;
+    for (auto customer_id : route) { // go through each node representing a customer in the solution
+        // find the requested amount of the goods
+        auto request_id = customer_id - 2; // the requests always start with node 2 (because 1 is the depot) and therefore customer with ID 2 has request n. 0
+        auto req = requests[request_id];
+        if (req.whereto.id != customer_id) {
+            cerr << "This should not happen, means there was a mismatch in the data file and therefore request need to use a hashtable instead of a sorted vector" << endl;
+            exit(1);
+        }
+        auto load = req.quantity;
+        vehicle_capacity -= load;
+    }
+    
+    return vehicle_capacity;
+}
+
+/**
  * Funcion to run the genetic algorithm
 */
-void genetic(const VRPDataReader& reader)  {
+void genetic(const vector<Node>& nodes, const vector<Request>& requests, const double &vehicleCapacity)  {
 
-    size_t iteration_limit = 5000;
-    auto customers = reader.nodes;
+    size_t iteration_limit = 50000;
+    auto customers = nodes;
     auto distanceMatrix = calculateDistanceMatrix(customers);
 
-    auto population = initPopulation(customers, 50); // 200 is the recommended amount
+    auto population = initPopulation(customers, 50); // 50 seems ok
 
     // Running the algorithm
     for (size_t i = 0; i < iteration_limit; i++) {
         // Select parents using the binary tournament method
-        vector<int> parent1 = binaryTournament(population, reader, distanceMatrix);
-        vector<int> parent2 = binaryTournament(population, reader, distanceMatrix);
+        vector<int> parent1 = binaryTournament(population, requests, vehicleCapacity, distanceMatrix);
+        vector<int> parent2 = binaryTournament(population, requests, vehicleCapacity, distanceMatrix);
 
         // Create an offspring using ordered crossover
         pair<vector<int>, vector<int>> offsprings = orderedCrossover(parent1, parent2);
@@ -313,17 +329,17 @@ void genetic(const VRPDataReader& reader)  {
         auto offspring2 = offsprings.second;
 
         // Mutate the offspring with a certain probability
-        offspring1 = mutation(offspring1, reader, distanceMatrix);
-        offspring2 = mutation(offspring2, reader, distanceMatrix);
+        offspring1 = mutation(offspring1, requests, vehicleCapacity);
+        offspring2 = mutation(offspring2, requests, vehicleCapacity);
 
         // Find the worst score in population and the correspnding weak member
-        pair<pair<double, double>, pair<vector<int>, vector<int>>> worst_member = populationFitness(population, reader, distanceMatrix);
+        pair<pair<double, double>, pair<vector<int>, vector<int>>> worst_member = populationFitness(population, requests, vehicleCapacity, distanceMatrix);
         auto worst_score = worst_member.first.first;
         auto worst_solution = worst_member.second.first;
 
         // Evaluate the offsprings against the lowest score in population
-        auto offspring1_score = fitness(offspring1, reader, distanceMatrix);
-        auto offspring2_score = fitness(offspring2, reader, distanceMatrix);
+        auto offspring1_score = fitness(offspring1, requests, vehicleCapacity, distanceMatrix);
+        auto offspring2_score = fitness(offspring2, requests, vehicleCapacity, distanceMatrix);
 
         double better_score = offspring1_score > offspring2_score ?  offspring2_score : offspring1_score;
 
@@ -338,11 +354,42 @@ void genetic(const VRPDataReader& reader)  {
     }
 
     // Find the best score
-    pair<pair<double, double>, pair<vector<int>, vector<int>>> best_member = populationFitness(population, reader, distanceMatrix);
+    pair<pair<double, double>, pair<vector<int>, vector<int>>> best_member = populationFitness(population, requests, vehicleCapacity, distanceMatrix);
     auto best_solution = best_member.second.second;
-    cout << best_member.first.second << endl;
 
     // Find the best routes
-    vector<vector<int>> routes = getRoutes(best_solution, reader, distanceMatrix);
-    print2D(routes);
+    vector<vector<int>> routes = getRoutes(best_solution, requests, vehicleCapacity);
+
+    double vehicleCount = routes.size();
+    double routeDistance = best_member.first.second - vehicleCount; // I added number of routes as a penalty, substract it
+    double average_n_of_customers = 0;
+    double routes_linking_2 = 0;
+    double unused_capacity = 0;
+    for (auto a : routes) {
+        auto cust_n = a.size();
+        if (cust_n == 2) { // If there are only 2 customers on the route, icnrease the counter
+            routes_linking_2++;
+        }
+        unused_capacity += findUnusedCapacity(a, requests, vehicleCapacity);
+        average_n_of_customers += cust_n;
+    }
+    average_n_of_customers = average_n_of_customers / vehicleCount;
+
+    // Printe the routes
+    print2D(routes); 
+
+    // Overall distances
+    cout << "Overall distances: " << routeDistance << endl;
+
+    // N-of-vehicles
+    cout << "Vehicles: " << vehicleCount << endl;
+
+    // average nubmer of customers per route
+    cout << "Average number of customers: " << average_n_of_customers << endl;
+
+    // routes linking only 2 customers
+    cout << "Number of routes linking only two customers: " << routes_linking_2 << endl;
+
+    // unused capacity in all routes
+    cout << "Unused capacity: " << unused_capacity << endl;
 }

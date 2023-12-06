@@ -5,7 +5,9 @@
 
 
 void print2D(vector<vector<int>> vec) {
+    auto lineCounter = 1;
     for (auto line : vec) {
+        cout << "#" << lineCounter++ << " ";
         for (auto column : line) {
             cout << column << " ";
         }

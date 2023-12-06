@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -Wextra -g
+CFLAGS = -Wall -Wextra -g -O2
 TARGET = gal
 
 FILE_NAMES_PATHS = src/gal src/genetic src/savings src/util structures/DataReader structures/Node structures/Vehicle structures/Request libs/pugixml
