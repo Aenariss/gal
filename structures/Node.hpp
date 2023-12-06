@@ -11,7 +11,7 @@ class Node {
         Node(int id, int type, double x, double y);
         Node();
         int id; // Node id
-        int type; // Node type (hub/client)
+        int type; // Node type (depot/client)
         double x; // X coord
         double y; // Y coord
 };

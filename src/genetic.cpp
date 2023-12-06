@@ -5,32 +5,9 @@
 **/
 
 #include "genetic.hpp"
+#include "util.hpp"
 
 using namespace std;
-
-/* Function to calculate the distance between 2 nodes */
-double distance(Node first, Node second) {
-    auto x_dist = first.x - second.x;
-    auto y_dist = first.y - second.y;
-
-    return sqrt(x_dist * x_dist + y_dist * y_dist);
-}
-
-void print2D(vector<vector<int>> vec) {
-    for (auto line : vec) {
-        for (auto column : line) {
-            cout << column << " ";
-        }
-        cout << endl;
-    }
-}
-
-void print1D(vector<int> vec) {
-    for (auto column : vec) {
-        cout << column << " ";
-    }
-    cout << endl;
-}
 
 /**
  * Function to initialize the population randomly
@@ -61,28 +38,7 @@ vector<vector<int>> initPopulation(vector<Node> customers, size_t populationSize
     return population;
 }
 
-/**
- * Function to create a distance matrix containing distances between nodes 
- * For the distance matrix we assume that the IDs of the customers are ordered from 1 to n
- * The reason for the matrix is that it's better to calculate the distances only once and not repeat it every time
- **/
-vector<vector<double>> calculateDistanceMatrix(vector<Node> customers) {
 
-    size_t n_of_customers = customers.size();
-
-    vector<vector<double>> distanceMatrix(n_of_customers, vector<double> (n_of_customers, 0));
-
-    for (auto customer : customers) {
-        int matrix_pos_x = customer.id - 1; // Node IDs start with 1 (the depot), need to lower this to start indexing from 0
-
-        // For each customer, go through the customer list and calculate distances
-        for (auto next_customer : customers) {
-            int matrix_pos_y = next_customer.id - 1;
-            distanceMatrix[matrix_pos_x][matrix_pos_y] = distance(customer, next_customer);
-        }
-    }
-    return distanceMatrix;
-}
 
 /**
  * Function to calculate the distance in the given route using the preCalculated distanceMatrix
@@ -168,7 +124,7 @@ vector<vector<int>> getRoutes(vector<int> solution, VRPDataReader reader, vector
         auto request_id = customer_id - 2; // the requests always start with node 2 (because 1 is the depot) and therefore customer with ID 2 has request n. 0
         auto req = requests[request_id];
         if (req.whereto.id != customer_id) {
-            cerr << "This should not happen, means there was a mismatch in the data file and therefore reuqest need to use a hashtable instead of a sorted vector" << endl;
+            cerr << "This should not happen, means there was a mismatch in the data file and therefore request need to use a hashtable instead of a sorted vector" << endl;
             exit(1);
         }
         auto load = req.quantity;
@@ -337,10 +293,7 @@ vector<vector<int>> removeMember(vector<vector<int>> population, vector<int> to_
 /**
  * Funcion to run the genetic algorithm
 */
-void genetic() {
-
-    // This all will be in a cycle going through all the data files which outputs the results into another folder
-    VRPDataReader reader = VRPDataReader("./data/B-n31-k05.xml");
+void genetic(const VRPDataReader& reader)  {
 
     size_t iteration_limit = 5000;
     auto customers = reader.nodes;
