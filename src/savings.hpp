@@ -46,7 +46,6 @@ struct SavingsRanker {
     }
 };
 
-
 Savings getMaxSavings(multiset<Savings, SavingsRanker>& savings, int customerId, const vector<bool>& isServed);
 
 class Route {
@@ -109,9 +108,19 @@ public:
     int getEnd() const;
 
     /**
+     * Retrieves the size of route.
+     * @return
+     */
+    int getSize() const;
+
+    /**
      * Prints the representation of the route to the standard output.
      */
     void printOut() const;
+
 };
+
+void createRouteForNotServedCustomers(const vector<bool>& isServed, vector<Route>& routes, double vehicleCapacity,
+                                      const vector<Request>& requests, const vector<vector<double>>& distanceMatrix);
 
 #endif //SAVINGS_HPP
