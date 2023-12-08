@@ -11,6 +11,8 @@ using namespace std;
 
 /**
  * Function to initialize the population randomly
+ * Time complexity: O(n + populationSize * (n + n)) = ~O(100n)
+ * Space complexity: O(n + populationSize * n) = ~O(50n)
 */
 vector<vector<int>> initPopulation(const vector<Node> &customers, const size_t &populationSize) {
 
@@ -28,7 +30,7 @@ vector<vector<int>> initPopulation(const vector<Node> &customers, const size_t &
     // Note that populationSize shouldn't be higher than (number of customers)! (factorial)
     // If that wasn't the case, there would be duplicates
     while (population.size() < populationSize) {
-        shuffle(begin(customer_ids), end(customer_ids), random_number_generator); // generate a permutation
+        shuffle(begin(customer_ids), end(customer_ids), random_number_generator); // generate a permutation, O(n)
 
         if(find(population.begin(), population.end(), customer_ids) == population.end()) { // If permutation isn't already present, append it
             population.push_back(customer_ids);
@@ -43,6 +45,8 @@ vector<vector<int>> initPopulation(const vector<Node> &customers, const size_t &
 /**
  * Function to calculate the distance in the given route using the preCalculated distanceMatrix
  * Implicitly adds the distance from the depot to the first customer and the distance from the last customer back to the depot
+ * Time complexity: O(n) - worst case => current route contains all customers
+ * Space complexity: O(1)
 */
 double calculateCustomerDistance(const vector<int> &current_route, const vector<vector<double>> &distanceMatrix) {
     double total_dist = 0;
@@ -54,7 +58,7 @@ double calculateCustomerDistance(const vector<int> &current_route, const vector<
     int prev_customer = customer_matrix_position;
 
     // Calculate distances between customers in the route
-    for (auto customer : current_route) {
+    for (auto &customer : current_route) {
         customer_matrix_position = customer-1;
         total_dist += distanceMatrix[prev_customer][customer_matrix_position];
         prev_customer = customer_matrix_position;
@@ -67,6 +71,8 @@ double calculateCustomerDistance(const vector<int> &current_route, const vector<
 /**
  * Function to calculate the fitness of the solution
  * Adds euclidean distances between each point and adds a penalty in the form of the amount of vehicles needed to fulfill the route (capacity constraint)
+ * Time complexity: O(n) // customer distance called max n times
+ * Space complexity: O(n) // current route which may contain at most N customers
 */
 double fitness(const vector<int> &solution, const vector<Request> &requests, const double &vehicleCapacity, const vector<vector<double>> &distanceMatrix) {
     double vehicle_capacity = vehicleCapacity; // all vehicle share the same capacity
@@ -76,7 +82,7 @@ double fitness(const vector<int> &solution, const vector<Request> &requests, con
 
     vector<int> current_route;
 
-    for (auto customer_id : solution) { // go through each node representing a customer in the solution
+    for (auto &customer_id : solution) { // go through each node representing a customer in the solution
         // find the requested amount of the goods
         auto request_id = customer_id - 2; // the requests always start with node 2 (because 1 is the depot) and therefore customer with ID 2 has request n. 0
         auto req = requests[request_id];
@@ -108,7 +114,9 @@ double fitness(const vector<int> &solution, const vector<Request> &requests, con
 }
 
 /**
- * Function to get the routes from a solution
+ * Function to split the solution into individual routes
+ * Time complexity: O(n)
+ * Space complexity: O(2n) // because route may be at most O(n) and this is then copied into routes which is another O(n)
 */
 vector<vector<int>> getRoutes(const vector<int> &solution, const vector<Request> &requests, const double &vehicleCapacity) {
     double vehicle_capacity = vehicleCapacity; // all vehicle share the same capacity
@@ -117,7 +125,7 @@ vector<vector<int>> getRoutes(const vector<int> &solution, const vector<Request>
 
     vector<int> current_route;
 
-    for (auto customer_id : solution) { // go through each node representing a customer in the solution
+    for (auto &customer_id : solution) { // go through each node representing a customer in the solution
         // find the requested amount of the goods
         auto request_id = customer_id - 2; // the requests always start with node 2 (because 1 is the depot) and therefore customer with ID 2 has request n. 0
         auto req = requests[request_id];
@@ -148,16 +156,10 @@ vector<vector<int>> getRoutes(const vector<int> &solution, const vector<Request>
 
 /**
  * Function to apply the mutation that randomly swaps 2 customers that are not on the same way
+ * Time complexity: weird because of random(), most of the time it will be O(1) + O(n) => O(n) // all routes only have at most N customers
+ * Space complexity: O(2n) // getRoutes
 */
 vector<int> mutation(const vector<int> &solution, const vector<Request> &requests, const double &vehicleCapacity) {
-
-    /*
-    // Only mutate with a probability of 30%
-    if (rand() % 100 >= 30) {
-        return solution;
-    }
-    */
-
     vector<vector<int>> routes = getRoutes(solution, requests, vehicleCapacity);
 
     int route_index1; int route_index2;
@@ -182,8 +184,8 @@ vector<int> mutation(const vector<int> &solution, const vector<Request> &request
 
     // flatten the route and return it as a new solution
     vector<int> mutant;
-    for (auto route : routes) {
-        for (auto customer : route) {
+    for (auto &route : routes) {
+        for (auto &customer : route) {
             mutant.push_back(customer);
         }
     }
@@ -193,6 +195,8 @@ vector<int> mutation(const vector<int> &solution, const vector<Request> &request
 
 /**
  * Function to select an eligible parent from 2 random selections, where the better one is chosen
+ * Time complexity: O(2n) // fitness * 2
+ * Space complexity: O(1)
 */
 vector<int> binaryTournament(const vector<vector<int>> &population, const vector<Request> &requests, const double &vehicleCapacity, const vector<vector<double>> &distanceMatrix) {
     auto pop_size = population.size();
@@ -208,6 +212,8 @@ vector<int> binaryTournament(const vector<vector<int>> &population, const vector
 
 /**
  * Function to apply the ordered crossover to generate new offspring
+ * Time complexity: O(n * (4n)) + O(n) => O(4n^2)
+ * Space complexity: O(4n) // 2 new offspring, 2 temporary parent copies
  * [1,2,5,6 | 7,8 | 9,10] parent1
  * [1,5,2,6 | 9,10 | 7,8] parent2
  * [1,5,2,6,  7,8  9,10] offspring1
@@ -256,13 +262,15 @@ pair<vector<int>, vector<int>> orderedCrossover(const vector<int> &parent1, cons
 
 /**
  * Function to calculate the fitness value of each member of the population and return the worst score & corresponding member
+ * Time complexity: O(50 * (n)) => O(50n)
+ * Space complexity: O(2n) // best & worst members
 */
 pair<pair<double,double>, pair<vector<int>, vector<int>>> populationFitness(const vector<vector<int>> &population, const vector<Request> &requests, const double &vehicleCapacity, const vector<vector<double>> &distanceMatrix) {
     double highest_score = 0;
     double lowest_score = __DBL_MAX__;
     vector<int> worst_member;
     vector<int> best_member;
-    for (auto member : population) {
+    for (auto &member : population) {
         auto score = fitness(member, requests, vehicleCapacity, distanceMatrix);
         // If his result is worse (higher), mark him as the new worst
         if (score > highest_score) {
@@ -279,19 +287,22 @@ pair<pair<double,double>, pair<vector<int>, vector<int>>> populationFitness(cons
 
 /**
  * Function to remove given element from the vector
+ * Time complexity: O(2n) // find & erase
+ * Space complexity: O(1)
 */
-vector<vector<int>> removeMember(vector<vector<int>> population, const vector<int> &to_remove) {
+void removeMember(vector<vector<int>> &population, const vector<int> &to_remove) {
     auto index_to_remove = find(population.begin(), population.end(), to_remove);
     population.erase(index_to_remove);
-    return population;
 }
 
 /**
  * Function to calculate unused capacity for a car on a given route - it supposes the route is already optimalized for only 1 car
+ * Time complexity: O(n)
+ * Space complexity: O(1)
 */
 double findUnusedCapacity(const vector<int> &route, const vector<Request> &requests, const double &vehicleCapacity) {
     auto vehicle_capacity = vehicleCapacity;
-    for (auto customer_id : route) { // go through each node representing a customer in the solution
+    for (auto &customer_id : route) { // go through each node representing a customer in the solution
         // find the requested amount of the goods
         auto request_id = customer_id - 2; // the requests always start with node 2 (because 1 is the depot) and therefore customer with ID 2 has request n. 0
         auto req = requests[request_id];
@@ -308,12 +319,15 @@ double findUnusedCapacity(const vector<int> &route, const vector<Request> &reque
 
 /**
  * Funcion to run the genetic algorithm
+ * Time complexity: O(100n) + O(50000 * (2* 2n + O(4n^2) + 2*n + 50n + 2n + 2n)) + O(502) => O(100n) + O(50000 * (60n + 4n^2)) + O(50n^2)
+ * => O(100n) + O(3*10^6 n^2 + 200000n) + O(50n^2) => O(3e6 n + 2e5 n^2) = O(n^2), but the coefficient of the N makes it more linear
+ * Space complexity: O(50n) + O(1 + 4n + 2* 2n + 2n + 2n + 1) => O(62n)
 */
 void genetic(const vector<Node>& nodes, const vector<Request>& requests, const double &vehicleCapacity)  {
 
     size_t iteration_limit = 50000;
     auto customers = nodes;
-    auto distanceMatrix = calculateDistanceMatrix(customers);
+    auto distanceMatrix = calculateDistanceMatrix(customers); // O(n^2) but we dont count this cuz its not part of the algo itself
 
 
     // TIMESTAMP: Record time before the algorithm starts
@@ -352,7 +366,7 @@ void genetic(const vector<Node>& nodes, const vector<Request>& requests, const d
 
         // Replace the worst member with offspring
         if (better_score < worst_score) {
-            population = removeMember(population, worst_solution);
+            removeMember(population, worst_solution);
             population.push_back(offspring1);
         }
     }

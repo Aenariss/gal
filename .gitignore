@@ -5,3 +5,4 @@ gal
 !compare.py
 *.json
 *.o
+*.png
