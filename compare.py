@@ -223,9 +223,102 @@ def geneticSpace():
     
     f.close()
 
+def savingsTime():
+    TIMES_SAVINGS_FILE = './results/timesSavings.txt'
+    i = 1
+    times = []
+    results = []
+    f = None
+    if (not path.exists(TIMES_SAVINGS_FILE)):
+        f = open(TIMES_SAVINGS_FILE, "w")
+        for file in files:
+            n_of_customers = search("n(\d+)", file).group(1)
+            print("Checkign the time for file", i, "/", all_files)
+            i += 1
+            time =  None
+            try:
+                result = subprocess.run(SAVINGS_RUN + [file], capture_output=True, text=True, timeout=5)
+            except:
+                crashed.append(file)
+                continue
+                
+            lines_result = result.stdout.split("\n")
+            for line in lines_result:
+                if len(line) > 0:
+                    if line[0] == "T": # Time
+                        time = float(search("([0-9]*[.])?[0-9]+", line).group())
+
+            times.append(time)
+            f.write(str(time) + ',' + str(n_of_customers) + '\n')
+    else:
+        f = open(TIMES_SAVINGS_FILE, "r")
+        results = []
+        for line in f.readlines():
+            line = line.split(',')
+            results.append((float(line[0]), int(line[1])))
+        results.sort(key=lambda x: x[1])
+    times = [x[0] for x in results]
+    nodes = [x[1] for x in results]
+    
+    timesGraph = plt.plot(nodes, times)
+    plt.ylabel("Ms running")
+    plt.xlabel("Nodes")
+    plt.title("Time complexity by nodes")
+    plt.savefig("savings Times.png", bbox_inches='tight')
+    
+    f.close()
+
+def savingsSpace():
+    SPACES_GENETIC_FILE = './results/spacesSavings.txt'
+    i = 1
+    spaces = []
+    results = []
+    f = None
+    if (not path.exists(SPACES_GENETIC_FILE)):
+        f = open(SPACES_GENETIC_FILE, "w")
+        for file in files:
+            n_of_customers = search("n(\d+)", file).group(1)
+            print("Checkign the space for file", i, "/", all_files)
+            i += 1
+            space =  None
+            result = subprocess.run(["valgrind"] + SAVINGS_RUN + [file], capture_output=True, text=True, timeout=180)
+            
+            lines_result = result.stderr.split("\n")
+            for line in lines_result:
+                if len(line) > 0:
+                    if search("bytes allocated", line): # space
+                        space = search("(\d+,\d+)+ bytes allocated", line).group()[:-len(("bytes allocated"))]
+                        space = space.replace(",", "")
+                        spaces.append(float(space))
+
+            spaces.append(space)
+            f.write(str(space) + ',' + str(n_of_customers) + '\n')
+            results.append((float(space), str(n_of_customers)))
+    else:
+        f = open(SPACES_GENETIC_FILE, "r")
+        results = []
+        for line in f.readlines():
+            line = line.split(',')
+            results.append((float(line[0]), int(line[1])))
+        results.sort(key=lambda x: x[1])
+    spaces = [x[0] for x in results]
+    nodes = [x[1] for x in results]
+    
+    timesGraph = plt.plot(nodes, spaces)
+    plt.ylabel("Heap memory usage")
+    plt.xlabel("Nodes")
+    plt.title("Space complexity by nodes")
+    plt.savefig("savings Spaces.png", bbox_inches='tight')
+    
+    f.close()
+
 comparisons()
 geneticTime()
 plt.figure().clear()
 geneticSpace()
+plt.figure().clear()
+savingsSpace()
+plt.figure().clear()
+savingsTime()
 
 # maybe plot some routes and results later?
