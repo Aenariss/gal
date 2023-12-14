@@ -1,8 +1,6 @@
 /.vscode
 .idea
 gal
-*.py
-!compare.py
 *.json
 *.o
 *.png
