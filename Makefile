@@ -21,4 +21,4 @@ clean:
 	rm -f $(objects)
 
 pack: all
-	zip -r xfiala61.zip Makefile src/ data/ results/ structures/ libs/ documentation.pdf presentation.pdf requirements.txt
+	zip -r xfiala61.zip Makefile src/ data/ results/ structures/ libs/ documentation.pdf presentation.pdf requirements.txt compare.py compare-data.py gather-data.py plot-path.py README.md
