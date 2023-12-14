@@ -43,7 +43,7 @@ vector<vector<double>> calculateDistanceMatrix(vector<Node> customers) {
 
     vector<vector<double>> distanceMatrix(n_of_customers, vector<double> (n_of_customers, 0));
 
-    for (auto customer : customers) {
+    for (auto& customer : customers) {
         int matrix_pos_x = customer.id - 1; // Node IDs start with 1 (the depot), need to lower this to start indexing from 0
 
         // For each customer, go through the customer list and calculate distances
