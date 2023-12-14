@@ -386,10 +386,14 @@ void genetic(const vector<Node>& nodes, const vector<Request>& requests, const d
     double routeDistance = best_member.first.second - vehicleCount; // I added number of routes as a penalty, substract it
     double average_n_of_customers = 0;
     double routes_linking_2 = 0;
+    double routes_linking_1 = 0;
     double unused_capacity = 0;
     for (auto a : routes) {
         auto cust_n = a.size();
-        if (cust_n == 2) { // If there are only 2 customers on the route, icnrease the counter
+
+        if (cust_n == 1) { // If there is only 1 customer on the route, icnrease the counter
+            routes_linking_1++;
+        } else if (cust_n == 2) { // If there are only 2 customers on the route, icnrease the counter
             routes_linking_2++;
         }
         unused_capacity += findUnusedCapacity(a, requests, vehicleCapacity);
@@ -408,6 +412,9 @@ void genetic(const vector<Node>& nodes, const vector<Request>& requests, const d
 
     // average nubmer of customers per route
     cout << "Average number of customers: " << average_n_of_customers << endl;
+
+    // routes linking only 2 customers
+    cout << "Number of routes linking only one customer: " << routes_linking_1 << endl;
 
     // routes linking only 2 customers
     cout << "Number of routes linking only two customers: " << routes_linking_2 << endl;
