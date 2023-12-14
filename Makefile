@@ -21,4 +21,4 @@ clean:
 	rm -f $(objects)
 
 pack: all
-	zip gal.zip Makefile $(sources)
+	zip -r xfiala61.zip Makefile src/ data/ results/ structures/ libs/ documentation.pdf presentation.pdf requirements.txt

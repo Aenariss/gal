@@ -111,17 +111,17 @@ def comparisons():
         time_G = genetic[6]; time_S = savings[6]
 
         shorter.append(distanceS / distanceG) # S is X% longer than G
-        avgCust.append(avgCustG / avgCustS)
+        avgCust.append(avgCustS / avgCustG)
         vehicles_comp.append(vehiclesS / vehiclesG)
-        only_two.append((only_2G, only_2S))
+        only_two.append((only_2S, only_2G))
         unused_total.append( unused_S/ unused_G)
-        times_t.append(time_G / time_S)
+        times_t.append(time_S / time_G)
         
 
 
     print("Savings needs", sum(vehicles_comp)/len(vehicles_comp), "more vehicles than Genetic")
     print("Savings is", sum(shorter)/len(shorter), "times longer than Genetic")
-    print("Genetic has", sum(avgCust)/len(avgCust), "times more customers on each route")
+    print("Savings has", sum(avgCust)/len(avgCust), "x times more customers on each route")
 
     ct_G = 0
     ct_S = 0
@@ -131,9 +131,9 @@ def comparisons():
         elif x < y:
             ct_S += 1
     
-    print("Genetic has", ct_G, "routes with only 2, Savings has", ct_S, "with only 2 customers")
-    print("Savings has", sum(unused_total)/len(unused_total), "more unused space")
-    print("Genetic is on average", sum(times_t)/len(times_t), "times slower than Savings")
+    print("Savings has", ct_G, "routes with only 2, Genetic has", ct_S, "with only 2 customers")
+    print("Savings has", sum(unused_total)/len(unused_total), "x more unused space")
+    print("Savings is", sum(times_t)/len(times_t), " x times slower than Genetic")
 
 def geneticTime():
     TIMES_GENETIC_FILE = './results/timesGenetic.txt'
@@ -171,9 +171,9 @@ def geneticTime():
     times = [x[0] for x in results]
     nodes = [x[1] for x in results]
     
-    timesGraph = plt.plot(nodes, times)
-    plt.ylabel("Ms running")
-    plt.xlabel("Nodes")
+    timesGraph = plt.scatter(nodes, times)
+    plt.ylabel("Time in microseconds")
+    plt.xlabel("Nodes in the graph")
     plt.title("Time complexity by nodes")
     plt.savefig("genetic Times.png", bbox_inches='tight')
     
@@ -215,9 +215,9 @@ def geneticSpace():
     spaces = [x[0] for x in results]
     nodes = [x[1] for x in results]
     
-    timesGraph = plt.plot(nodes, spaces)
+    timesGraph = plt.scatter(nodes, spaces)
     plt.ylabel("Heap memory usage")
-    plt.xlabel("Nodes")
+    plt.xlabel("Nodes in the graph")
     plt.title("Space complexity by nodes")
     plt.savefig("genetic Spaces.png", bbox_inches='tight')
     
@@ -260,9 +260,9 @@ def savingsTime():
     times = [x[0] for x in results]
     nodes = [x[1] for x in results]
     
-    timesGraph = plt.plot(nodes, times)
-    plt.ylabel("Ms running")
-    plt.xlabel("Nodes")
+    timesGraph = plt.scatter(nodes, times)
+    plt.ylabel("Time in microseconds")
+    plt.xlabel("Nodes in the graph")
     plt.title("Time complexity by nodes")
     plt.savefig("savings Times.png", bbox_inches='tight')
     
@@ -304,9 +304,9 @@ def savingsSpace():
     spaces = [x[0] for x in results]
     nodes = [x[1] for x in results]
     
-    timesGraph = plt.plot(nodes, spaces)
+    timesGraph = plt.scatter(nodes, spaces)
     plt.ylabel("Heap memory usage")
-    plt.xlabel("Nodes")
+    plt.xlabel("Nodes in the graph")
     plt.title("Space complexity by nodes")
     plt.savefig("savings Spaces.png", bbox_inches='tight')
     

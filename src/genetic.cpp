@@ -11,8 +11,8 @@ using namespace std;
 
 /**
  * Function to initialize the population randomly
- * Time complexity: O(n + populationSize * (n + n)) = ~O(100n)
- * Space complexity: O(n + populationSize * n) = ~O(50n)
+ * Time complexity: O(n + populationSize * (n + n)) = ~O(p*2n)
+ * Space complexity: O(n + populationSize * n) = ~O(p*n)
 */
 vector<vector<int>> initPopulation(const vector<Node> &customers, const size_t &populationSize) {
 
@@ -262,7 +262,7 @@ pair<vector<int>, vector<int>> orderedCrossover(const vector<int> &parent1, cons
 
 /**
  * Function to calculate the fitness value of each member of the population and return the worst score & corresponding member
- * Time complexity: O(50 * (n)) => O(50n)
+ * Time complexity: O(p * (n)) => O(p*n)
  * Space complexity: O(2n) // best & worst members
 */
 pair<pair<double,double>, pair<vector<int>, vector<int>>> populationFitness(const vector<vector<int>> &population, const vector<Request> &requests, const double &vehicleCapacity, const vector<vector<double>> &distanceMatrix) {
@@ -319,8 +319,8 @@ double findUnusedCapacity(const vector<int> &route, const vector<Request> &reque
 
 /**
  * Funcion to run the genetic algorithm
- * Time complexity: O(100n) + O(50000 * (2* 2n + O(4n^2) + 2*n + 50n + 2n + 2n)) + O(502) => O(100n) + O(50000 * (60n + 4n^2)) + O(50n^2)
- * => O(100n) + O(3*10^6 n^2 + 200000n) + O(50n^2) => O(3e6 n + 2e5 n^2) = O(n^2), but the coefficient of the N makes it more linear
+ * Time complexity: O(p*2n) + O(i * (2* 2n + O(4n^2) + 2*n + p*n + 2n + 2n)) + O(p*n) => O(p*2n) + O(i * (10n + p*n + 4n^2)) + O(p*n)
+ * => O(p*n) + O(i*(n*(10+p) +4n^2)) + O(50n) => with our numbers O(3e6 n + 2e5 n^2) = O(n^2), but the coefficient of the N makes it more linear
  * Space complexity: O(50n) + O(1 + 4n + 2* 2n + 2n + 2n + 1) => O(62n)
 */
 void genetic(const vector<Node>& nodes, const vector<Request>& requests, const double &vehicleCapacity)  {
